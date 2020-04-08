@@ -4,9 +4,10 @@ Simple lightweight API meant to accept data from sparse data streams, cache
 that data, and make it more complete as different attributes become present.
 Redis is the caching mechanism and should be tuned based on your desired cache 
 eviction poicy. API accepts a post request with a JSON payload that is written 
-to a pipeline and flushed at configurable intervals into Redis. If enabled 
-aggregated data is pushed to a Redis stream. Flush setting can be tuned by time 
-and/or buffer size. You can start the entire service with `docker-compose up`.
+to a pipeline and flushed at configurable intervals into Redis. Flush setting 
+can be tuned by time and/or buffer size. If streaming output is enabled 
+aggregated data is pushed to a Redis stream.  You can start the entire service 
+with `docker-compose up`.
 
 ## Usage
 
