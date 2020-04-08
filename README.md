@@ -33,7 +33,6 @@ curl -X POST \
   -d '{ "data": {"first_name": "Jasmine", "last_name": "Bourbon", "admit_date": "2020-07-20", "middle_name": "Tiffany"}}'
 ```
 
-![alt text](/images/screenshot.png)
 
 ## Contributing
 
