@@ -1,23 +1,22 @@
-
 package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/mediocregopher/radix/v3"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-	"log"
-	"fmt"
-	"github.com/mediocregopher/radix/v3"
 )
 
 // Defaults
-const DefaultFlushInterval = (150*time.Microsecond) //seconds
-const DefaultFlushSize = 10 //records
-const DefaultConnNetwork = "tcp" //tcp
-const DefaultConnPoolScaleFactor = 1 //initial PoolSize x ScaleFactor
+const DefaultFlushInterval = (150 * time.Microsecond) //seconds
+const DefaultFlushSize = 10                           //records
+const DefaultConnNetwork = "tcp"                      //tcp
+const DefaultConnPoolScaleFactor = 1                  //initial PoolSize x ScaleFactor
 const DefaultConnPoolSize = 5
 const DefaulConnPingInterval = (90 * time.Second)
 const DefaultConnHost = "127.0.0.1"
@@ -27,15 +26,15 @@ const DefaultStreamOut = false
 const DefaultStreamName = "raggs"
 
 type Doc struct {
-	Key			string                  `json:"key"`
-	Datatype	string                  `json:"datatype"`
-	Date    	string                  `json:"date"`
-	Data    	*map[string]interface{} `json:"data"`
+	Key      string                  `json:"key"`
+	Datatype string                  `json:"datatype"`
+	Date     string                  `json:"date"`
+	Data     *map[string]interface{} `json:"data"`
 }
 
 type Service struct {
-	connPool *radix.Pool
-	streamOut bool
+	connPool   *radix.Pool
+	streamOut  bool
 	streamName string
 }
 
@@ -58,7 +57,7 @@ func (svc *Service) Init() error {
 
 	// Disable for now
 	//if os.Getenv("REDIS_HOST") == "" {
-		connNetwork = DefaultConnNetwork
+	connNetwork = DefaultConnNetwork
 	//} else {
 	//	redisHost, err := os.Getenv("REDIS_HOST")
 	//	if err != nil {
@@ -151,7 +150,7 @@ func (svc *Service) Init() error {
 		svc.streamOut = DefaultStreamOut
 	} else {
 		svc.streamOut, err = strconv.ParseBool(os.Getenv("REDIS_STREAM_OUT"))
-			if err != nil {
+		if err != nil {
 			return err
 		}
 	}
@@ -169,7 +168,7 @@ func (svc *Service) Init() error {
 		connNetwork,
 		connAddr,
 		connPoolSize,
-		radix.PoolOnFullBuffer((connPoolSize * connScaleFactor), 5*time.Second),
+		radix.PoolOnFullBuffer((connPoolSize*connScaleFactor), 5*time.Second),
 		radix.PoolPingInterval(connPingInterval),
 		radix.PoolPipelineWindow(flushInterval, flushSize),
 	)
@@ -209,7 +208,7 @@ func (svc *Service) bulk(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		// Decode the incoming payload that will be placed into the bulker.
 		decoder := json.NewDecoder(r.Body)
-	
+
 		// read open bracket
 		t, err := decoder.Token()
 		if err != nil {
@@ -217,7 +216,7 @@ func (svc *Service) bulk(w http.ResponseWriter, r *http.Request) {
 			//log.Fatalf("Could not parse payload: v%", err)
 			fmt.Printf("%T: %v\n", t, t)
 		}
-	
+
 		// while the array contains values
 		for decoder.More() {
 			var m Doc
@@ -229,9 +228,9 @@ func (svc *Service) bulk(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(err)
 			}
 
-			m.Key = generateKey([]string{m.Datatype,m.Key},":")
+			m.Key = generateKey([]string{m.Datatype, m.Key}, ":")
 
-			//implicit pipelining should convert flush multiple requests in the 
+			//implicit pipelining should convert flush multiple requests in the
 			err = svc.connPool.Do(radix.FlatCmd(nil, "HMSET", m.Key, m.Data))
 			if err != nil {
 				panic(err)
@@ -251,7 +250,7 @@ func (svc *Service) bulk(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}
-	
+
 		// read closing bracket
 		t, err = decoder.Token()
 		if err != nil {
@@ -294,7 +293,7 @@ func (svc *Service) handler(w http.ResponseWriter, r *http.Request) {
 
 		doc.Date = t.Format(time.RFC3339)
 		doc.Datatype = path[1]
-		doc.Key = generateKey(path[1:2],":")
+		doc.Key = generateKey(path[1:2], ":")
 
 		fmt.Println(doc.Data)
 

@@ -3,9 +3,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
-	"fmt"
 )
 
 const version = "0.1.0"
