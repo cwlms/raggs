@@ -1,0 +1,15 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  raggs:
+    build: .
+    ports:
+     - "3000:3000"
+    environment:
+      REDIS_HOST: "127.0.0.1"
+      REDIS_PORT: "6379"
+      REDIS_POOL_SIZE: "5"
+      REDIS_POOL_SCALE_FACTOR: ".2"
+      REDIS_STREAM_OUT: "True"
+      REDIS_STREAM_NAME: "raggs"

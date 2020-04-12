@@ -8,10 +8,9 @@ to a pipeline and flushed at configurable intervals into Redis. Flush setting
 can be tuned by time and/or buffer size. If streaming output is enabled 
 aggregated data is pushed to a Redis stream.  You can start the entire service 
 with `docker-compose up`.
-
 ## Usage
 
-This task is configured with the following environment variables:
+This task is configurable with the following environment variables:
 
 ```bash
 REDIS_HOST              # redis host
@@ -25,8 +24,21 @@ REDIS_STREAM_OUT        # bool enables redis streaming out
 REDIS_STREAM_NAME       # used if streaming out enabled
 ```
 
-## Example
+## Defaults:
+```bash
+export REDIS_HOST="127.0.0.1"
+export REDIS_PORT="6379"
+export REDIS_POOL_SIZE="5"
+export REDIS_POOL_SCALE_FACTOR="1"
+export FLUSH_INTERVAL="150ms"
+export FLUSH_SIZE="10"
+export RUN_ONCE="false"
+export REDIS_STREAM_OUT="false"
+export REDIS_STREAM_NAME="raggs"
+```
 
+## Examples
+### Post
 ```
 curl -X POST \
   http://127.0.0.1:3000/encounter/testencounter123 \
@@ -34,6 +46,20 @@ curl -X POST \
   -d '{ "data": {"first_name": "Jasmine", "last_name": "Bourbon", "admit_date": "2020-07-20", "middle_name": "Tiffany"}}'
 ```
 
+### Get
+```
+curl -X GET \
+  http://127.0.0.1:3000/encounter/testencounter123
+```
+### Bulk
+```
+curl -X POST \
+  http://127.0.0.1:3000/bulk \
+  -H 'content-type: application/json' \
+  -d '[{ "DataType": "encounter", "key": "123-1", "data": {"first_name": "Jasmine", "last_name": "Bourbon", "admit_date": "2020-07-20", "middle_name": "T"}},
+{ "dataType": "encounter", "Key": "1234-1", "data": {"first_name": "Christopher", "last_name": "Williams", "admit_date": "2020-07-20", "middle_name": "J"}},
+{ "dataType": "encounter", "key": "123-1", "data": {"middle_name": "Tiffany", "age": "30"}}]'
+```
 
 ## Contributing
 

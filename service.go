@@ -230,9 +230,10 @@ func (svc *Service) bulk(w http.ResponseWriter, r *http.Request) {
 
 			m.Key = generateKey([]string{m.Datatype, m.Key}, ":")
 
-			//implicit pipelining should convert flush multiple requests in the
+			//implicit pipelining should flush multiple requests based on interval and size
 			err = svc.connPool.Do(radix.FlatCmd(nil, "HMSET", m.Key, m.Data))
 			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
 				panic(err)
 			}
 
@@ -240,10 +241,12 @@ func (svc *Service) bulk(w http.ResponseWriter, r *http.Request) {
 				var responseVal map[string]string
 				err := svc.connPool.Do(radix.FlatCmd(&responseVal, "HGETALL", m.Key))
 				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
 					panic(err)
 				} else {
 					err := svc.connPool.Do(radix.FlatCmd(nil, "XADD", svc.streamName, "*", responseVal))
 					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
 						panic(err)
 					}
 				}
@@ -289,9 +292,7 @@ func (svc *Service) handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		t := time.Now()
-
-		doc.Date = t.Format(time.RFC3339)
+		doc.Date = time.Now().Format(time.RFC3339)
 		doc.Datatype = path[1]
 		doc.Key = generateKey(path[1:2], ":")
 
@@ -300,6 +301,7 @@ func (svc *Service) handler(w http.ResponseWriter, r *http.Request) {
 		//r := elastic.NewBulkIndexRequest().Index(fmt.Sprintf(`%s-%s`, path[1], t.Format("2006-01-02"))).Type(path[2]).Doc(doc)
 		err = svc.connPool.Do(radix.FlatCmd(nil, "HMSET", doc.Key, doc.Data))
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			panic(err)
 		}
 
@@ -307,10 +309,12 @@ func (svc *Service) handler(w http.ResponseWriter, r *http.Request) {
 			var responseVal map[string]string
 			err := svc.connPool.Do(radix.FlatCmd(&responseVal, "HGETALL", doc.Key))
 			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
 				panic(err)
 			} else {
 				err := svc.connPool.Do(radix.FlatCmd(nil, "XADD", svc.streamName, "*", responseVal))
 				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
 					panic(err)
 				}
 			}
@@ -335,6 +339,7 @@ func (svc *Service) handler(w http.ResponseWriter, r *http.Request) {
 		var responseVal map[string]string
 		err := svc.connPool.Do(radix.FlatCmd(&responseVal, "HGETALL", doc.Key))
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			panic(err)
 		}
 
