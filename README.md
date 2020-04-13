@@ -24,7 +24,7 @@ REDIS_STREAM_OUT        # bool enables redis streaming out
 REDIS_STREAM_NAME       # used if streaming out enabled
 ```
 
-## Defaults:
+## Defaults
 ```bash
 export REDIS_HOST="127.0.0.1"
 export REDIS_PORT="6379"
