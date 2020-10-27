@@ -11,6 +11,7 @@ run: build
 
 build: vet
 	@echo Building Binary and Container
+	@env GOOS=linux GOARCH=386 
 	@go build -o ${NAME}
 	@docker build -t ${MAINTAINER}/${NAME} .
 

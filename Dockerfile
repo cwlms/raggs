@@ -1,9 +1,9 @@
 FROM golang:1.13.4-alpine
 
-MAINTAINER cwlms (chris@whiskeytechnology.group)
-
 COPY raggs /bin/raggs
 
-USER nobody
+RUN chmod +x /bin/raggs
 
 ENTRYPOINT ["/bin/raggs"]
+
+EXPOSE 3000
